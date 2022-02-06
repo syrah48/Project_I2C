@@ -4,7 +4,7 @@
 //
 //
 //  Chandler James
-//  Sept 2020
+//  Feb 2022
 //------------------------------------------------------------------------------
 
 //#include  "functions.h"
@@ -15,6 +15,7 @@
 //#include "ports.h"
 
 extern char acc_ready;
+extern char startup_delay;
 
 #pragma vector = TimerB0_0CCR_Vector
 __interrupt void Timer0_B0_ISR(void){
@@ -36,9 +37,13 @@ __interrupt void TIMER0_B1_ISR(void){
 switch(__even_in_range(TB0IV,14)){
   case 0: break; // No interrupt
   
-//CCR1 50 msec----------------------------------------------------------------
+//CCR1 4 sec------------------------------------------------------------------
   case 2:
-    
+    startup_delay = 0;  //allow program to beginning running
+    acc_ready = 1;
+    stop_timerB0_CCR1();
+    P1OUT &= ~RED_LED;
+    P6OUT &= ~GRN_LED;
     TB0CCR1 += TB0CCR1_INTERVAL; // Add Offset to TBCCR1
     break;
 //----------------------------------------------------------------------------

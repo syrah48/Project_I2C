@@ -4,7 +4,7 @@
 #include <msp430.h>
 #include "I2C.h"
 
-extern char i2c_receive;
+extern volatile char i2c_receive;
 char acc_status;
 char acc_ready;
 int acc_x;
