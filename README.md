@@ -14,5 +14,7 @@ Work Environment:
 
 Problems encountered log:
 1. Start bit is not being transmitted MSP430 to accelerometer.  As result, code gets stuck waiting for transmission.
+  
   a. Further investigation led us to discover that the SDA Line is never high when the program is running.
+  
   b. the SCL line is high at the start of the program, but gets stuck low once the code gets stuck.
