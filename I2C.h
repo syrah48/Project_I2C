@@ -36,14 +36,17 @@ ST  = self-test bits. 01 and 10 are two different test states.
 //LIS3DH Bit Masks
 #define ACC_DATA_READY 0x08     //for reading ZYXDA on STATUS REG
 
-//toggle design ideas
+//toggle design ideas ---------------------------------------------------------
 #define TBCNT_2   1     //set to 1 to set TBCNT = 2 for intialization
 #define USE_INT1  0     //test of INT1 can notify when data is ready
 #define READ_ALL  0     //test if we can send one read message and get all data
 #define USE_TIMER 1     //test if timer can be used
-#define ACC_DEBUG 0     //debug state
+#define ACC_DEBUG 1     //debug state
 //#define SELF_TEST 0     //set accelerometer to generate arbitrary measurement values
 #define SET_CTRL_REG4 1  //if 0, use default reg4 value, so don't send anything
+#define DEFAULT_DATA_RATE 1 //toggle between data rate from tutorial and data rate from datasheet
+#define MY_WAIT 0        //toggle wait function implementation.  
+//-----------------------------------------------------------------------------
 
 //Timers
 #define TimerB0_0CCR_Vector             (TIMER0_B0_VECTOR)
@@ -73,8 +76,8 @@ ST  = self-test bits. 01 and 10 are two different test states.
 // Interval = (clk * desired time) / (ID * EX0)
 
 #define TB0CCR0_INTERVAL (15625)        //interrupt every 1 sec 
-#define TB0CCR1_INTERVAL (1562)       //interrupt ever 100 msec
-#define TB0CCR2_INTERVAL (62500)       //interrupt every 500 msec
+#define TB0CCR1_INTERVAL (62500)       //interrupt ever 4 sec
+#define TB0CCR2_INTERVAL (62500)       //interrupt every 4 sec
 
 #define TB1CCR0_INTERVAL (31250)        //interrupt every 250 msec
 #define TB1CCR1_INTERVAL (62500)       //interrupt every 500 msec
