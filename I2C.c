@@ -31,6 +31,7 @@ void init_I2C(void) {
 
   UCB0CTLW0 |= UCMODE_3;   // put into I2C mode
   UCB0CTLW0 |= UCMST;      //put into Master
+  UCB0CTLW0 |= UCSYNC;     //enable synchronous mode
   UCB0I2CSA= 0x18;         //slave addr =0x18 (accelerometer)
 //  UCB0CTLW0 |= UCTR;             // put into write mode
 
@@ -40,7 +41,11 @@ void init_I2C(void) {
   UCB0TBCNT = 1;
 #endif
   
-  UCB0CTLW1 |= UCASTP_2;   // auto STOP mode
+#if NO_TBCNT
+  UCB0TBCNT = 0;
+#endif
+  
+  UCB0CTLW1 |= UCASTP_0;   // auto STOP mode
 
   //---setup ports
 
@@ -56,8 +61,10 @@ void init_I2C(void) {
 
   //--setup IRQs
 
-  UCB0IE |= UCTXIE0;      //TX IRQ
-  UCB0IE |= UCRXIE0;	  //Rx IRQ
+  UCB0IE |= UCTXIE0;      //enable TX IRQ
+  UCB0IE |= UCRXIE0;	  //enable Rx IRQ
+  UCB0IE |= UCNACKIE;	  //enable unacknowledge IRQ
+  UCB0IE |= UCSTPIE;	  //enable stop IRQ
 }
 
 void wait_I2C(void) {
@@ -75,15 +82,25 @@ void write_I2C(char slave_addr, char reg_addr, char write_data) {
   UCB0I2CSA = slave_addr;        //set slave address
   
   i2c_transmit_1 = reg_addr;     //send reg address we will write to
-  
+  UCB0TXBUF = reg_addr;
   i2c_transmit_2 = write_data;  
   
   UCB0CTLW0 |= UCTR;             // put into write mode  
-  
   UCB0CTLW0 |= UCTXSTT;          // Gen START
+  /*
+  while (UCB0IFG & UCTXIFG);   //wait for transmit buffer to be emptied
+  UCB0IFG &= ~UCTXIFG;
   
-  wait_I2C();
+  UCB0TXBUF = write_data;
+  while (UCB0IFG & UCTXIFG);   //wait for transmit buffer to be emptied
+  UCB0IFG &= ~UCTXIFG;
+  UCB0CTLW0 |= UCTXSTP;
+  */
+  while((UCB0IFG &  UCSTPIFG) == 0){}  //wait for everything to stop
+  UCB0IFG &= ~UCSTPIFG;                //clear the stop flag
   
+//  wait_I2C();
+  /*
 #if !TBCNT_2  
   //WRITE the data to that register
   //leave in write mode
@@ -93,7 +110,7 @@ void write_I2C(char slave_addr, char reg_addr, char write_data) {
   UCB0CTLW0 |= UCTXSTT;          // Gen START
   wait_I2C();
 #endif
-
+ */
 }
 
 void read_I2C(char slave_addr, char reg_addr) {
@@ -107,14 +124,13 @@ void read_I2C(char slave_addr, char reg_addr) {
   transmit_count = 0;
   
   UCB0I2CSA = slave_addr;         //set slave address
-  
-  i2c_transmit_1 = reg_addr;       //send reg address we will read from
-  
-  UCB0CTLW0 |= UCTR;             // put into write mode
-  
+  UCB0TXBUF = reg_addr;       //send reg address we will read from
+  UCB0CTLW0 |= UCTR;             // put into write mode  
   UCB0CTLW0 |= UCTXSTT;          // Gen START
+  while (UCB0IFG & UCTXIFG);   //wait for transmit buffer to be emptied
+  UCB0IFG &= ~UCTXIFG;
   
-  wait_I2C();
+//  wait_I2C();
 /* 
   UCB0CTLW0 |= UCSWRST;    //put into SW Reset
   UCB0TBCNT = 1;	   // byte counter = 1

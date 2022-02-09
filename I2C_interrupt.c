@@ -19,6 +19,8 @@ __interrupt void EUSCI_B0_I2C_ISR(void) {
           break;
 //---------------------------------------------------------- vector 24: TXIFG0
     	case 0x18:
+//          ++transmit_count;
+//          break;
           switch(transmit_count) {
           case 0:
             UCB0TXBUF = i2c_transmit_1;
@@ -26,11 +28,18 @@ __interrupt void EUSCI_B0_I2C_ISR(void) {
             break;
           case 1:
             UCB0TXBUF = i2c_transmit_2;
+            ++transmit_count;          
+            break;
+          case 2:
+            UCB0CTLW0 |= UCTXSTP;
+            UCB0IFG &= ~UCTXIFG;
             ++transmit_count;
             break;
           default:
             break;
           }
+          
+          
 /*
 #if TBCNT_2
              switch the state assuming that interrupt will fire again

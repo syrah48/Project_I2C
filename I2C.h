@@ -38,6 +38,7 @@ ST  = self-test bits. 01 and 10 are two different test states.
 
 //toggle design ideas ---------------------------------------------------------
 #define TBCNT_2   1     //set to 1 to set TBCNT = 2 for intialization
+#define NO_TBCNT  1
 #define USE_INT1  0     //test of INT1 can notify when data is ready
 #define READ_ALL  0     //test if we can send one read message and get all data
 #define USE_TIMER 1     //test if timer can be used

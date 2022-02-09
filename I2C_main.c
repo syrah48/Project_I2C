@@ -13,6 +13,7 @@ char startup_delay = 1;
 
 void main(void){  
   WDTCTL =WDTPW | WDTHOLD;
+  init_I2C();
   __enable_interrupt();   //enables maskables
   
   //Init_Clocks();
@@ -26,7 +27,7 @@ void main(void){
   while (startup_delay) {}  //wait 4 seconds before starting
 #endif
   
-  init_I2C();
+  
   init_lis3dh();
   
   while(1){
