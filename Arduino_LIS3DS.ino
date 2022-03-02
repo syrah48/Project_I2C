@@ -15,17 +15,22 @@ void setup() {
 
 }
 
-
+int runCount =0;
 void loop()
 {
   //Get all parameters
-  Serial.print("\nAccelerometer:\n");
-  Serial.print(" X = ");
-  Serial.println(myIMU.readFloatAccelX(), 4);
-  Serial.print(" Y = ");
-  Serial.println(myIMU.readFloatAccelY(), 4);
-  Serial.print(" Z = ");
-  Serial.println(myIMU.readFloatAccelZ(), 4);
+  //Serial.print("\nAccelerometer:\n");
+ // Serial.print(" X = ");
+  Serial.print(runCount++);
+  Serial.print(",");
+  Serial.print(myIMU.readFloatAccelX(), 4);
+  Serial.print(",");
+  //Serial.print(" Y = ");
+  Serial.print(myIMU.readFloatAccelY(), 4);
+  Serial.print(",");
+  //Serial.print(" Z = ");
+  Serial.print(myIMU.readFloatAccelZ(), 4);
+  Serial.print('\n');
 
-  delay(1000);
+  delayMicroseconds(10);
 }
