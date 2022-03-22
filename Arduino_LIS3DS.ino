@@ -6,8 +6,13 @@ LIS3DH myIMU; //Default constructor is I2C, addr 0x19.
 
 void setup() {
   // put your setup code here, to run once:
+  //sets pin 10 to led output
   pinMode(10, OUTPUT);
+  //sets pin 11 to led output
+  pinMode(11, OUTPUT);
+  //sets pin 10 pwm signal
   analogWrite(10, 127);
+  //sets pin 11 pwm signal
   analogWrite(11, 0);
   Serial.begin(9600);
   delay(1000);//relax...
