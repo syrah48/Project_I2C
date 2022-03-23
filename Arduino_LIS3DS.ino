@@ -6,13 +6,8 @@ LIS3DH myIMU; //Default constructor is I2C, addr 0x19.
 
 void setup() {
   // put your setup code here, to run once:
-  //sets pin 10 to led output
   pinMode(10, OUTPUT);
-  //sets pin 11 to led output
-  pinMode(11, OUTPUT);
-  //sets pin 10 pwm signal
   analogWrite(10, 127);
-  //sets pin 11 pwm signal
   analogWrite(11, 0);
   Serial.begin(9600);
   delay(1000);//relax...
@@ -29,29 +24,35 @@ int new_temp = 0;
 int actual_temp = 0;
 void loop()
 {
-  //Get all parameters
-  //Serial.print("\nAccelerometer:\n");
-  
-  Serial.print(runCount++);
-  Serial.print(",");
-  Serial.print(" X = ");
-  Serial.print(myIMU.readFloatAccelX(), 4);
-  Serial.print(",");
-  Serial.print(" Y = ");
-  Serial.print(myIMU.readFloatAccelY(), 4);
-  Serial.print(",");
-  Serial.print(" Z = ");
-  Serial.print(myIMU.readFloatAccelZ(), 4);
-  Serial.print(",");
-  //read temp test
-  
-  temp = int((myIMU.read10bitADC3()>>6));
-  new_temp = 19 - temp;
-  actual_temp = new_temp + 19;
-  //temp = 45- temp;
-   Serial.print(" T = ");
-  Serial.print(actual_temp);
-  Serial.print('\n');
+  // Get all parameters
+  // 
+  unsigned int mytime[100];
+  float accx[100];
+  float accy[100];
+  float accz[100];
+  int myarray[100];
+  for (int i=0; i<100; i++) {
+    mytime[i]=millis();
+//    accx[i]=myIMU.readRawAccelX();
+//    accy[i]=myIMU.readRawAccelY();
+//    accz[i]=myIMU.readRawAccelZ();
+    accx[i]=myIMU.readFloatAccelX();
+    accy[i]=myIMU.readFloatAccelY();
+    accz[i]=myIMU.readFloatAccelZ();
+  }
+  for (int i=0; i<100; i++) {
 
-  //delayMicroseconds(1000);
+    //time
+    Serial.print(mytime[i]);
+    Serial.print(" ");
+//    Accelerometer values
+    Serial.print(accx[i],4); // x
+    Serial.print(" ");
+    Serial.print(accy[i],4); // y
+    Serial.print(" ");
+    Serial.print(accz[i],4); // z
+    Serial.println();
+
+  }
+// delay(1000);
 }
