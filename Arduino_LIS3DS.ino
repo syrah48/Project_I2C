@@ -6,9 +6,10 @@ LIS3DH myIMU; //Default constructor is I2C, addr 0x19.
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(10, OUTPUT);
-  analogWrite(10, 127);
-  analogWrite(11, 0);
+  pinMode(7, OUTPUT);
+  pinMode(8, OUTPUT);
+  digitalWrite(7, HIGH);
+  digitalWrite(8, HIGH);
   Serial.begin(9600);
   delay(1000);//relax...
   //Serial.println("Processor came out of reset.\n");
