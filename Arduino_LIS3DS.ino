@@ -40,13 +40,10 @@ byte sine_data [91]=
 252,  253,  253,  254,  254,  254,  255,  255,  255,  255
   };
 float f_peaks[5]; // top 5 frequencies peaks in descending order
-
 //int runCount =0;
 int temp = 0;
 int temp_offset = 19; // Degrees Celsius
 const int sampleSize = 128; // Power of 2 ex(32,64,128,256...) Max 128 in SRAM
-
-
 
 unsigned long mytime[sampleSize]; //Time stamps stored here
 // Accelerometer values are 8 bit, only use in Low Power Mode
@@ -60,38 +57,6 @@ float x;
 float y;
 float z;
 uint8_t status_reg;
-
-void loop()
-{
-  
-  // Get all parameters from Accelerometer
-  for (int i=0; i<sampleSize; i++) {
-
-    // Only read new data
-    // Loops until new data is available
-    // STATUS_REG (27h) ZYXDA[3] ZDA[2] YDA[1] XDA[0] //
-    // bitread: (((value) >> (bit)) & 0x01)
-    for (uint8_t ZYXDA = 0x00; ZYXDA == 0; ZYXDA = (((status_reg) >> (3)) & 0x01) ){
-      // Read DA register to see if there is new data available
-      myIMU.readRegister(&status_reg, LIS3DH_STATUS_REG2); // readRegister(uint8_t* outputPointer, uint8_t offset)
-    }
-    //Get timestamp of data
-    if(i != 0)
-      mytime[i]=micros()+mytime[i-1];
-    else
-      mytime[i]=micros();
-    // Read the Highest Significant byte of the 16-bit Accelerometer registers (only 8-bit if set to LP mode)
-    accx[i] = myIMU.readRawAccelX()>>8; // X is read first so read this first
-    accy[i] = myIMU.readRawAccelY()>>8;
-    accz[i] = myIMU.readRawAccelZ()>>8;
-    
-    // delayMicroseconds(100); // Allow time for Accelerometer values to update
-  }
-  printSamples();
-  //FFT(*accx,128,5000);
-  //printSamples();
-  
-}
 void printPeaks(void){
   for(int i = 0; i< 5;i++)
     Serial.println(f_peaks[i]);
@@ -141,7 +106,6 @@ void printSamples(void){
  // delay(1000); // Delay between each sample
  return;
 }
-
 float FFT(int in[],int N,float Frequency)
 {
 /*
@@ -152,7 +116,6 @@ Term:
 1. in[]     : Data array, 
 2. N        : Number of sample (recommended sample size 2,4,8,16,32,64,128...)
 3. Frequency: sampling frequency required as input (Hz)
-
 If sample size is not in power of 2 it will be clipped to lower side of number. 
 i.e, for 150 number of samples, code will consider first 128 sample, remaining sample  will be omitted.
 For Arduino nano, FFT of more than 128 sample not possible due to mamory limitation (64 recomended)
@@ -314,6 +277,30 @@ float cosine(int i)
   else if(j>270 && j<361){out= sine_data[j-270];}
   return (out/255);
 }
+void loop()
+{
+  
+  // Get all parameters from Accelerometer
+  for (int i=0; i<sampleSize; i++) {
 
-
-
+    // Only read new data
+    // Loops until new data is available
+    // STATUS_REG (27h) ZYXDA[3] ZDA[2] YDA[1] XDA[0] //
+    // bitread: (((value) >> (bit)) & 0x01)
+    for (uint8_t ZYXDA = 0x00; ZYXDA == 0; ZYXDA = (((status_reg) >> (3)) & 0x01) ){
+      // Read DA register to see if there is new data available
+      myIMU.readRegister(&status_reg, LIS3DH_STATUS_REG2); // readRegister(uint8_t* outputPointer, uint8_t offset)
+    }
+    //Get timestamp of data
+    mytime[i]=micros();
+    // Read the Highest Significant byte of the 16-bit Accelerometer registers (only 8-bit if set to LP mode)
+    accx[i] = myIMU.readRawAccelX()>>8; // X is read first so read this first
+    accy[i] = myIMU.readRawAccelY()>>8;
+    accz[i] = myIMU.readRawAccelZ()>>8;
+    
+    // delayMicroseconds(100); // Allow time for Accelerometer values to update
+  }
+  
+  FFT(*accx,128,5000);
+  printPeaks();
+}
