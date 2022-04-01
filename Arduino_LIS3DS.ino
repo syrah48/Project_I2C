@@ -1,6 +1,7 @@
 #include "SparkFunLIS3DH.h"
 #include "Wire.h"
 #include "SPI.h"
+#include "arduinoFFT.h"
 
 LIS3DH myIMU(SPI_MODE,10); //Default constructor is I2C, addr 0x19. Set to SPI, CS Pin 10
 
@@ -25,21 +26,21 @@ void setup() {
   myIMU.begin();
 
 }
-//fixed sin data for time savings
-byte sine_data [91]=
- {
-0,  
-4,    9,    13,   18,   22,   27,   31,   35,   40,   44, 
-49,   53,   57,   62,   66,   70,   75,   79,   83,   87, 
-91,   96,   100,  104,  108,  112,  116,  120,  124,  127,  
-131,  135,  139,  143,  146,  150,  153,  157,  160,  164,  
-167,  171,  174,  177,  180,  183,  186,  189,  192,  195,       //Paste this at top of program
-198,  201,  204,  206,  209,  211,  214,  216,  219,  221,  
-223,  225,  227,  229,  231,  233,  235,  236,  238,  240,  
-241,  243,  244,  245,  246,  247,  248,  249,  250,  251,  
-252,  253,  253,  254,  254,  254,  255,  255,  255,  255
-  };
-float f_peaks[5]; // top 5 frequencies peaks in descending order
+// //fixed sin data for time savings
+// byte sine_data [91]=
+//  {
+// 0,  
+// 4,    9,    13,   18,   22,   27,   31,   35,   40,   44, 
+// 49,   53,   57,   62,   66,   70,   75,   79,   83,   87, 
+// 91,   96,   100,  104,  108,  112,  116,  120,  124,  127,  
+// 131,  135,  139,  143,  146,  150,  153,  157,  160,  164,  
+// 167,  171,  174,  177,  180,  183,  186,  189,  192,  195,       //Paste this at top of program
+// 198,  201,  204,  206,  209,  211,  214,  216,  219,  221,  
+// 223,  225,  227,  229,  231,  233,  235,  236,  238,  240,  
+// 241,  243,  244,  245,  246,  247,  248,  249,  250,  251,  
+// 252,  253,  253,  254,  254,  254,  255,  255,  255,  255
+//   };
+uint8_t f_peaks[5]; // top 5 frequencies peaks in descending order
 //int runCount =0;
 int temp = 0;
 int temp_offset = 19; // Degrees Celsius
@@ -172,8 +173,8 @@ float e,c,s,tr,ti;
 
           for(int j=0;j<i10;j++)
           {
-          c=cosine(e*j);
-          s=sine(e*j);    
+          c=cos(e*j);
+          s=sin(e*j);    
           n1=j;
           
                 for(int k=0;k<i11;k++)
@@ -248,35 +249,39 @@ c=0;
     }
 
 
-
+    free(data);
+    free(in_ps);
+    free(out_r);
+    free(out_im);
+    
 }
     
 
-float sine(int i)
-{
-  int j=i;
-  float out;
-  while(j<0){j=j+360;}
-  while(j>360){j=j-360;}
-  if(j>-1   && j<91){out= sine_data[j];}
-  else if(j>90  && j<181){out= sine_data[180-j];}
-  else if(j>180 && j<271){out= -sine_data[j-180];}
-  else if(j>270 && j<361){out= -sine_data[360-j];}
-  return (out/255);
-}
+// float sine(int i)
+// {
+//   int j=i;
+//   float out;
+//   while(j<0){j=j+360;}
+//   while(j>360){j=j-360;}
+//   if(j>-1   && j<91){out= sine_data[j];}
+//   else if(j>90  && j<181){out= sine_data[180-j];}
+//   else if(j>180 && j<271){out= -sine_data[j-180];}
+//   else if(j>270 && j<361){out= -sine_data[360-j];}
+//   return (out/255);
+// }
 
-float cosine(int i)
-{
-  int j=i;
-  float out;
-  while(j<0){j=j+360;}
-  while(j>360){j=j-360;}
-  if(j>-1   && j<91){out= sine_data[90-j];}
-  else if(j>90  && j<181){out= -sine_data[j-90];}
-  else if(j>180 && j<271){out= -sine_data[270-j];}
-  else if(j>270 && j<361){out= sine_data[j-270];}
-  return (out/255);
-}
+// float cosine(int i)
+// {
+//   int j=i;
+//   float out;
+//   while(j<0){j=j+360;}
+//   while(j>360){j=j-360;}
+//   if(j>-1   && j<91){out= sine_data[90-j];}
+//   else if(j>90  && j<181){out= -sine_data[j-90];}
+//   else if(j>180 && j<271){out= -sine_data[270-j];}
+//   else if(j>270 && j<361){out= sine_data[j-270];}
+//   return (out/255);
+// }
 void loop()
 {
   
@@ -303,4 +308,6 @@ void loop()
   
   FFT(*accx,128,5000);
   printPeaks();
+  // FFT(*accy,128,5000);
+  // printPeaks();
 }
