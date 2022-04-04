@@ -9,38 +9,25 @@ void setup() {
   // put your setup code here, to run once:
   
   // Test both LEDs
-  digitalWrite(7, HIGH);//Green LED
-  digitalWrite(8, HIGH);//Red LED
-  delay(500);
   digitalWrite(7, LOW);//Green LED
   digitalWrite(8, LOW);//Red LED
-  delay(500);
-  digitalWrite(7, HIGH);//Green LED
-  digitalWrite(8, HIGH);//Red LED
+  // delay(500);
+  // digitalWrite(7, LOW);//Green LED
+  // digitalWrite(8, LOW);//Red LED
+  // delay(500);
+  // digitalWrite(7, HIGH);//Green LED
+  // digitalWrite(8, HIGH);//Red LED
   
   Serial.begin(115200); //(Max 115200 without issues)
   delay(1000); // relax...
-  //Serial.println("Processor came out of reset.\n");
-
   //Call .begin() to configure the IMU
   myIMU.begin();
 
 }
-// //fixed sin data for time savings
-// byte sine_data [91]=
-//  {
-// 0,  
-// 4,    9,    13,   18,   22,   27,   31,   35,   40,   44, 
-// 49,   53,   57,   62,   66,   70,   75,   79,   83,   87, 
-// 91,   96,   100,  104,  108,  112,  116,  120,  124,  127,  
-// 131,  135,  139,  143,  146,  150,  153,  157,  160,  164,  
-// 167,  171,  174,  177,  180,  183,  186,  189,  192,  195,       //Paste this at top of program
-// 198,  201,  204,  206,  209,  211,  214,  216,  219,  221,  
-// 223,  225,  227,  229,  231,  233,  235,  236,  238,  240,  
-// 241,  243,  244,  245,  246,  247,  248,  249,  250,  251,  
-// 252,  253,  253,  254,  254,  254,  255,  255,  255,  255
-//   };
+double runningAverage =0;
+unsigned int samplecount = 0;
 uint8_t f_peaks[5]; // top 5 frequencies peaks in descending order
+uint8_t maxAmplitude[5];
 //int runCount =0;
 int temp = 0;
 int temp_offset = 19; // Degrees Celsius
@@ -126,7 +113,6 @@ Contact: abhilashpatel121@gmail.com
 Documentation:https://www.instructables.com/member/abhilash_patel/instructables/
 2/3/2021: change data type of N from float to int for >=256 samples
 */
-
 unsigned int data[13]={1,2,4,8,16,32,64,128,256,512,1024,2048};
 int a,c1,f,o,x;
 a=N;  
@@ -192,17 +178,6 @@ float e,c,s,tr,ti;
                   }       
              }
      }
-
-/*
-for(int i=0;i<data[o];i++)
-{
-Serial.print(out_r[i]);
-Serial.print("\t");                                     // un comment to print RAW o/p    
-Serial.print(out_im[i]); Serial.println("i");      
-}
-*/
-
-
 //---> here onward out_r contains amplitude and our_in conntains frequency (Hz)
     for(int i=0;i<data[o-1];i++)               // getting amplitude from compex number
         {
@@ -214,10 +189,6 @@ Serial.print(out_im[i]); Serial.println("i");
          Serial.println(out_r[i]); 
          */    
         }
-
-
-
-
 x=0;       // peak detection
    for(int i=1;i<data[o-1]-1;i++)
       {
@@ -247,41 +218,10 @@ c=0;
     {
     f_peaks[i]=out_im[in_ps[i]];
     }
-
-
-    free(data);
-    free(in_ps);
-    free(out_r);
-    free(out_im);
-    
+    //printPeaks();
 }
     
 
-// float sine(int i)
-// {
-//   int j=i;
-//   float out;
-//   while(j<0){j=j+360;}
-//   while(j>360){j=j-360;}
-//   if(j>-1   && j<91){out= sine_data[j];}
-//   else if(j>90  && j<181){out= sine_data[180-j];}
-//   else if(j>180 && j<271){out= -sine_data[j-180];}
-//   else if(j>270 && j<361){out= -sine_data[360-j];}
-//   return (out/255);
-// }
-
-// float cosine(int i)
-// {
-//   int j=i;
-//   float out;
-//   while(j<0){j=j+360;}
-//   while(j>360){j=j-360;}
-//   if(j>-1   && j<91){out= sine_data[90-j];}
-//   else if(j>90  && j<181){out= -sine_data[j-90];}
-//   else if(j>180 && j<271){out= -sine_data[270-j];}
-//   else if(j>270 && j<361){out= sine_data[j-270];}
-//   return (out/255);
-// }
 void loop()
 {
   
@@ -305,9 +245,29 @@ void loop()
     
     // delayMicroseconds(100); // Allow time for Accelerometer values to update
   }
-  
-  FFT(*accx,128,5000);
-  printPeaks();
-  // FFT(*accy,128,5000);
-  // printPeaks();
+
+
+  //printSamples();
+  FFT(*accy,128,5000);
+  samplecount++;
+  if(samplecount == 0 || runningAverage < 0){
+    runningAverage = 0;
+    samplecount = 0;
+  }
+  else
+   runningAverage = (runningAverage*(samplecount-1) + f_peaks[0])/samplecount;
+  Serial.println(runningAverage);
+  Serial.println(samplecount);
+  if(runningAverage > 0 && samplecount >2000){// whatever we want to see
+    //Serial.println("I'm Bad");
+    digitalWrite(7, LOW);//Green LED
+    digitalWrite(8, HIGH);//Red LED
+   
+  }
+  else {
+    //Serial.println("I'm Good");
+    digitalWrite(8, LOW);//Red LED
+    digitalWrite(7, HIGH);//Green LED
+  }
+    
 }
