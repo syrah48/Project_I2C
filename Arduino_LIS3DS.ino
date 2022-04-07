@@ -12,8 +12,7 @@ void setup() {
   pinMode(6, OUTPUT); //Green LED
   pinMode(5, OUTPUT); //Red LED
   digitalWrite(5, HIGH);//Green LED
-  digitalWrite(6, HIGH);//Red LED
-  
+  digitalWrite(6, LOW);//Red LED
   
   Serial.begin(115200); //(Max 115200 without issues)
   delay(1000); // relax...
@@ -21,8 +20,9 @@ void setup() {
   myIMU.begin();
 }
 
-float runningAverage = 0;
+int average = 0;
 float dataAverage = 0;
+float sampleFrequency = 0;
 unsigned int samplecount = 0;
 int temp = 0;
 int temp_offset = 19; // Degrees Celsius
@@ -99,9 +99,23 @@ unsigned long time;
 #define SCL_FREQUENCY 0x02
 #define SCL_PLOT 0x03
 
+double averageAbove2k(){
+  int above2kcounter = 0;
+  int avg = 0;
+  for(int i = 0; i < 64; i++){
+    //Serial.println(out_im[i]);
+    if(((i * 1.0 * sampleFrequency) / sampleSize) > 2000){
+      
+      avg += out_r[i];
+      above2kcounter++;
+    }
+  }
+  avg = avg/above2kcounter;
+  return avg;
+}
 
-
-float sampleFrequency = 0;
+int runningAverage=0;
+int runningAverageCount=0;
 void loop()
 {
   
@@ -128,11 +142,10 @@ void loop()
 
 
   
-  Serial.println("my frequency: ");
+  //Serial.println("my frequency: ");
   sampleFrequency = 1/(0.000001*(mytime[127] - mytime[0])/sampleSize);
-  Serial.println(sampleFrequency);
   //Serial.println(sampleFrequency);
-  printSamples();
+  //Serial.println(sampleFrequency);
   for(int i = 0; i < sampleSize; i++){
     out_r[i] = accy[i];
     out_im[i] = 0;
@@ -147,28 +160,26 @@ void loop()
   //Serial.println("Computed Imaginary values:");
   //PrintVector(out_r, sampleSize, SCL_INDEX);
   FFT.ComplexToMagnitude(out_r, out_im, sampleSize); /* Compute magnitudes */
-  Serial.println("Computed magnitudes:");
-  PrintVector(out_r, (sampleSize >> 1), SCL_FREQUENCY);
-  // samplecount++;
-  // if(samplecount == 0 || runningAverage < 0){
-  //   runningAverage = 0;
-  //   samplecount = 0;
-  // }
-  // else
-  //  runningAverage = (runningAverage*(samplecount-1) + f_peaks[0])/samplecount;
-  // Serial.println(runningAverage);
-  // Serial.println(samplecount);
-  // if(runningAverage > 0 && samplecount >2000){// whatever we want to see
-  //   //Serial.println("I'm Bad");
-  //   digitalWrite(5, LOW);//Green LED
-  //   digitalWrite(6, HIGH);//Red LED
-   
-  // }
-  // else {
-  //   //Serial.println("I'm Good");
-  //   digitalWrite(5, LOW);//Red LED
-  //   digitalWrite(6, HIGH);//Green LED
-  // }
+  // PrintVector(out_r, sampleSize, SCL_FREQUENCY);
+  average = averageAbove2k();
+  runningAverage = (runningAverage*runningAverageCount + average)/(runningAverageCount+1);
+  runningAverageCount++;
+  if(runningAverageCount > 100){
+     if(  runningAverage > 79 ){//193* average
+      //Serial.println("I'm Bad");
+     digitalWrite(5, LOW);//Green LED
+      digitalWrite(6, HIGH);//Red LED
+    }
+    else {
+     //Serial.println("I'm Good");
+      digitalWrite(5, HIGH);//Green LED
+      digitalWrite(6, LOW);//Red LED
+   }
+    //Serial.println(runningAverage);
+    runningAverageCount = 0;
+    runningAverage = 0;
+  }
+  
     
 }
 
